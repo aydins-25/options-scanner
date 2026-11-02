@@ -3,6 +3,12 @@ name: Options scan
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: "scan = today's options; backtest = test the short-hold rules on past data (synthetic option prices)"
+        required: false
+        default: "scan"
+        type: choice
+        options: [scan, backtest]
       tickers:
         description: "Tickers, space separated"
         required: true
@@ -28,11 +34,16 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-      - run: python scanner.py $TICKERS
+      - if: inputs.mode != 'backtest'
+        run: python scanner.py $TICKERS
         env:
           TICKERS: ${{ inputs.tickers }}
           BUDGET: ${{ inputs.budget }}
           HOLD_DAYS: ${{ inputs.hold_days }}
+      - if: inputs.mode == 'backtest'
+        run: python backtest.py
+        env:
+          BUDGET: ${{ inputs.budget }}
       - uses: actions/upload-artifact@v4
         with:
           name: options-scan
