@@ -1,0 +1,40 @@
+# Options scanner (real brokerage options, not SMG). Actions tab, "Options scan", Run workflow.
+name: Options scan
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Tickers, space separated"
+        required: true
+        default: "NBIS NVDA ORCL INTC HOOD BE MU SNDK GOOG"
+      budget:
+        description: "Budget per trade in $ (blank = no ranking)"
+        required: false
+        default: ""
+      hold_days:
+        description: "How many days you plan to hold"
+        required: false
+        default: "2"
+permissions:
+  contents: read
+jobs:
+  options:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scanner.py $TICKERS
+        env:
+          TICKERS: ${{ inputs.tickers }}
+          BUDGET: ${{ inputs.budget }}
+          HOLD_DAYS: ${{ inputs.hold_days }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: options-scan
+          path: output/options/
+          retention-days: 30
