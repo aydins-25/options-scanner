@@ -17,7 +17,12 @@ not SMG: SMG has no options). Owner: Aydin. Started 2026-11-02.
 - Outside market hours Yahoo returns bid/ask 0, OI 0 and garbage IV. The scanner falls back to the last trade price
   and computes IV itself (Black-Scholes, r = 4%). Always re-check bid/ask in Robinhood and use limit orders at mid.
 - Earnings dates already in the past must not be flagged as "before expiry" (fixed).
-- Nothing here is backtested. Say so every time; never present the ranking as a proven edge.
+- `backtest.py` (Actions, mode = backtest) tests the short-hold rules with SYNTHETIC option prices (Black-Scholes from
+  real stock prices, IV = 1.1 x 20d realized vol, 6% round-trip spread, Robinhood hours/fees, gaps fill at the open).
+  First run 2026-11-02, 25 tickers 2015-2026: EVERY setup loses on average (-4% to -18% per trade). +50% take profit
+  in 2 days hits only 1-6% of the time; -40% stop hits 30-65%. Day after a -10% crash + market gap up (INTC on
+  2026-11-02): calls -18%/trade (n=108, stock fell 2.6% avg in 2 days, real data); puts +4% but mixed by year, small n.
+  Never present any setup as a proven edge.
 
 ## Aydin's usage so far
 - Watchlist 2026-11-02: NBIS NVDA ORCL INTC HOOD BE MU SNDK GOOG. All down 8-45% over 20 days (tech selloff).
