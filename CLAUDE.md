@@ -23,6 +23,18 @@ not SMG: SMG has no options). Owner: Aydin. Started 2026-11-02.
   in 2 days hits only 1-6% of the time; -40% stop hits 30-65%. Day after a -10% crash + market gap up (INTC on
   2026-11-02): calls -18%/trade (n=108, stock fell 2.6% avg in 2 days, real data); puts +4% but mixed by year, small n.
   Never present any setup as a proven edge.
+- `strategies.py` (mode = strategies): SPY/QQQ 2004-2026 with REAL implied vol (VIX/VXN), skew, T-bill rate.
+  Put credit spreads: -3% to -4%/trade at base settings, sign flips with the skew assumption -> not usable.
+  2-day hold: calls ~0%, puts -10%. LONG CALL 60 DTE delta 0.60 above 200-day, max 21 trading days, +/-50%:
+  +4.9% (SPY) / +6.9% (QQQ) per trade, positive in every variant and both halves. Still LESS than plain buy &
+  hold (SPY +9.2%/yr, QQQ +14.3%/yr price only): it's leveraged index exposure, not an edge. Note: Yahoo VIX
+  history ended 2026-05-22 in that run.
+- Research read 2026-11-02: buying options loses on average (Coval-Shumway 2001); retail loses 5-14% around
+  earnings (de Silva/So/Smith); index VRP is real (Bondarenko/Cboe PUT) but OTM spreads give much of it back via
+  skew; pre-earnings straddles +3.3% gross (Gao/Xing/Zhang 2018) but spreads eat it; 200-day filter cuts drawdowns.
+- `paper.py` + workflow "Paper trade" (weekdays ~3:15 pm ET): paper-trades LONG60 (SPY/QQQ) and the old TWODAY pick
+  with REAL quotes (buy at ask, sell at bid), state in paper/*.csv, summary in paper/report.md. Check it before
+  recommending real money; a few weeks of trades prove little either way.
 
 ## Aydin's usage so far
 - Watchlist 2026-11-02: NBIS NVDA ORCL INTC HOOD BE MU SNDK GOOG. All down 8-45% over 20 days (tech selloff).
@@ -36,6 +48,10 @@ not SMG: SMG has no options). Owner: Aydin. Started 2026-11-02.
 ## Style
 - Phone-friendly: short tables, exact contract (ticker, expiry, strike, call/put), cost, breakeven, exit rule.
 - Always: worst case = the whole premium. Real money.
+
+## Recommendation given 2026-11-02 (after full control was granted)
+- Core money: index ETF buy & hold beat every option strategy tested. Options only with money he can lose;
+  LONG60 is the only tested option rule worth paper-trading. Stop the 2-day lotto trades.
 
 ## Repo conventions
 - Commit to main, end commit messages with the Claude attribution lines.

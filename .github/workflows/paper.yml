@@ -1,0 +1,39 @@
+# Paper trading with real option quotes. Runs near the close on weekdays and commits paper/ back to the repo.
+name: Paper trade
+on:
+  schedule:
+    - cron: "15 19 * * 1-5"   # 3:15 pm EDT (summer)
+    - cron: "15 20 * * 1-5"   # 3:15 pm EST (winter); the script skips whichever run is outside 14:45-15:55 ET
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Run even outside 14:45-15:55 ET (quotes may be stale)"
+        required: false
+        default: "no"
+        type: choice
+        options: ["no", "yes"]
+permissions:
+  contents: write
+concurrency:
+  group: paper
+  cancel-in-progress: false
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python paper.py
+        env:
+          FORCE: ${{ inputs.force == 'yes' && '1' || '' }}
+      - name: Commit results
+        run: |
+          git config user.name "paper-trade bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add paper/ || true
+          git diff --cached --quiet || (git commit -m "Paper trade update $(date -u +%F)" && git push)
