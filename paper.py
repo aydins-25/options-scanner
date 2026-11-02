@@ -61,13 +61,17 @@ def long60_signal(sym, today):
     e = min(exps, key=lambda x: abs((pd.Timestamp(x) - today).days - 60))
     days = (pd.Timestamp(e) - today).days
     c = t.option_chain(e).calls
-    c = c[(c["bid"] > 0) & (c["ask"] > 0)].copy()
+    c = c[(c["bid"] > 0) & (c["ask"] > 0) & ((c["strike"] / spot - 1).abs() <= 0.15)].copy()
+    c = c[(c["ask"] - c["bid"]) / ((c["ask"] + c["bid"]) / 2) <= 0.10]          # stale/garbage quotes have wide spreads
     if c.empty:
-        return None, f"{sym}: no live quotes (market closed?)"
+        return None, f"{sym}: no clean live quotes near the money (market closed?)"
     c["mid"] = (c["bid"] + c["ask"]) / 2
     c["iv"] = [sc.implied_vol(m, spot, k, days / 365, "call") for m, k in zip(c["mid"], c["strike"])]
     c["delta"] = [sc.delta(spot, k, days / 365, v, "call") for k, v in zip(c["strike"], c["iv"])]
     c = c.dropna(subset=["delta"])
+    c = c[c["delta"].between(0.50, 0.70) & (c["iv"] < 1.0)]
+    if c.empty:
+        return None, f"{sym}: no strike with delta 0.50-0.70 and sane IV in the live quotes"
     o = c.iloc[(c["delta"] - 0.60).abs().argsort().iloc[0]]
     pos = dict(strategy="LONG60", sym=sym, contract=o["contractSymbol"], kind="call", expiry=e, strike=o["strike"],
                opened=str(today.date()), entry=float(o["ask"]), entry_mid=float(o["mid"]), tp=0.5, sl=-0.5,
@@ -163,8 +167,10 @@ def main():
         if pos:
             op.loc[len(op)] = pos
 
-    op.to_csv(OPEN, index=False)
-    cl.to_csv(CLOSED, index=False)
+    dry = bool(os.environ.get("FORCE"))
+    if not dry:
+        op.to_csv(OPEN, index=False)
+        cl.to_csv(CLOSED, index=False)
 
     # 3. report
     R = [f"# Paper trading (real quotes, no money)\n", f"_Last run: {log[0][4:]}. Buys at the ask, sells at the bid, "
@@ -176,7 +182,10 @@ def main():
     for s, g in cl.groupby("strategy"):
         R.append(f"| {s} | {len(g)} | {(g['pnl'] > 0).mean():.0%} | ${g['pnl'].sum():+,.0f} | {g['ret'].mean():+.1%} |")
     R += ["", "## Log (this run)"] + [f"- {x}" for x in log[1:]]
-    REPORT.write_text("\n".join(R) + "\n")
+    if dry:
+        R.insert(1, "**DRY RUN (forced outside 14:45-15:55 ET): nothing saved, quotes may be stale.**\n")
+    else:
+        REPORT.write_text("\n".join(R) + "\n")
     print("\n".join(R))
 
 

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: "Run even outside 14:45-15:55 ET (quotes may be stale)"
+        description: "Dry run now, even outside 14:45-15:55 ET (saves nothing)"
         required: false
         default: "no"
         type: choice
