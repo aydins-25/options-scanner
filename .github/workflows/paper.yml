@@ -1,13 +1,14 @@
-# Paper trading with real option quotes. Runs near the close on weekdays and commits paper/ back to the repo.
+# Paper trading with real option quotes. Runs once per trading day during market hours and commits paper/ back to the repo.
 name: Paper trade
 on:
   schedule:
-    - cron: "15 19 * * 1-5"   # 3:15 pm EDT (summer)
-    - cron: "15 20 * * 1-5"   # 3:15 pm EST (winter); the script skips whichever run is outside 14:45-15:55 ET
+    # every 30 min, 14:07-21:37 UTC (covers 10:00-15:55 ET in EST and EDT). GitHub often starts these hours late;
+    # the script acts on the first run inside market hours each day and skips the rest.
+    - cron: "7,37 14-21 * * 1-5"
   workflow_dispatch:
     inputs:
       force:
-        description: "Dry run now, even outside 14:45-15:55 ET (saves nothing)"
+        description: "Dry run now, any time (saves nothing; quotes may be stale)"
         required: false
         default: "no"
         type: choice

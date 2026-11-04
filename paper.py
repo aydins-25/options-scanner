@@ -9,7 +9,7 @@ Strategies tracked (one open position per strategy and ticker):
   TWODAY  The scanner's #1 pick for the watchlist at a $220 budget, held up to 2 trading days, +50% / -40%.
           The old style, tracked for comparison (the backtests say it loses).
 
-Runs once per trading day near the close (~3:15 pm ET) (GitHub Actions "Paper trade", scheduled). State lives in paper/*.csv and
+Runs once per trading day during market hours (first scheduled run that lands 10:00-15:55 ET) (GitHub Actions "Paper trade", scheduled). State lives in paper/*.csv and
 paper/report.md, committed back to the repo by the workflow.
 """
 import os
@@ -120,10 +120,16 @@ def main():
     if today.weekday() >= 5:
         print("weekend, nothing to do")
         return
-    # scheduled twice (UTC crons cover EST and EDT); only act 14:45-15:55 ET, when quotes are live near the close
-    if not os.environ.get("FORCE") and not (14 * 60 + 45 <= now.hour * 60 + now.minute <= 15 * 60 + 55):
-        print(f"{now:%H:%M} ET is outside the 14:45-15:55 window, skipping")
-        return
+    # GitHub's scheduler runs hours late, so the workflow fires every 30 min through the day and the FIRST run that
+    # lands in market hours (10:00-15:55 ET, live quotes) does the day's work; later runs that day skip.
+    last = DIR / "last_run.txt"
+    if not os.environ.get("FORCE"):
+        if not (10 * 60 <= now.hour * 60 + now.minute <= 15 * 60 + 55):
+            print(f"{now:%H:%M} ET is outside market hours 10:00-15:55, skipping")
+            return
+        if last.exists() and last.read_text().strip() == str(today.date()):
+            print(f"already ran today ({today.date()}), skipping")
+            return
     op, cl = read(OPEN, COLS), read(CLOSED, COLS + ["closed", "exit", "pnl", "ret", "why"])
     log = [f"Run {pd.Timestamp.now(tz='America/New_York'):%Y-%m-%d %H:%M} ET"]
 
@@ -169,6 +175,7 @@ def main():
 
     dry = bool(os.environ.get("FORCE"))
     if not dry:
+        last.write_text(str(today.date()) + "\n")
         op.to_csv(OPEN, index=False)
         cl.to_csv(CLOSED, index=False)
 

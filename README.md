@@ -8,4 +8,4 @@ Real-brokerage (Robinhood-style) options data sheet for a watchlist. Not advice.
 
 - `backtest.py` (mode backtest): the 1-2 day hold on 25 stocks, synthetic option prices. Loses in every setup.
 - `strategies.py` (mode strategies): SPY/QQQ with real VIX/VXN: spreads, 60-day calls, 2-day hold.
-- `paper.py` (workflow "Paper trade", weekdays ~3:15 pm ET): paper trades with real quotes -> `paper/report.md`.
+- `paper.py` (workflow "Paper trade", once per trading day in market hours): paper trades with real quotes -> `paper/report.md`.

@@ -32,7 +32,7 @@ not SMG: SMG has no options). Owner: Aydin. Started 2026-11-02.
 - Research read 2026-11-02: buying options loses on average (Coval-Shumway 2001); retail loses 5-14% around
   earnings (de Silva/So/Smith); index VRP is real (Bondarenko/Cboe PUT) but OTM spreads give much of it back via
   skew; pre-earnings straddles +3.3% gross (Gao/Xing/Zhang 2018) but spreads eat it; 200-day filter cuts drawdowns.
-- `paper.py` + workflow "Paper trade" (weekdays ~3:15 pm ET): paper-trades LONG60 (SPY/QQQ) and the old TWODAY pick
+- `paper.py` + workflow "Paper trade" (once per trading day, 10:00-15:55 ET; GitHub cron runs late, so it fires every 30 min): paper-trades LONG60 (SPY/QQQ) and the old TWODAY pick
   with REAL quotes (buy at ask, sell at bid), state in paper/*.csv, summary in paper/report.md. Check it before
   recommending real money; a few weeks of trades prove little either way.
 
