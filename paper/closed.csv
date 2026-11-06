@@ -1,1 +1,2 @@
 strategy,sym,contract,kind,expiry,strike,opened,entry,entry_mid,tp,sl,max_days,underlying_at_entry,closed,exit,pnl,ret,why
+TWODAY,INTC,INTC261120C00065000,call,2026-11-20,65.0,2026-11-02,1.94,1.915,0.5,-0.4,2,59.69940185546875,2026-11-06,0.92,-102.1,-0.5262,stop
